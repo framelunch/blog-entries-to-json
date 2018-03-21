@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /*
  * --- scripts sample
  * "md": "node modules/md2json.js --overview-length 100 --entry-dir entries --summary-path src/static/parties.json --detail-path src/static/parties",
