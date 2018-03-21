@@ -56,24 +56,18 @@ function getCompiledData(filepath) {
 function getOverview(source) {
     return source.length <= OVERVIEW_LENGTH ? source : source.substring(0, OVERVIEW_LENGTH) + "\u2026";
 }
-function outputSummary(source) {
-    var data = source.map(function (_a) {
-        var date = _a.date, overview = _a.overview, title = _a.title, tags = _a.tags, category = _a.category, thumbnail = _a.thumbnail;
-        return ({
-            date: date,
-            overview: overview,
-            title: title,
-            tags: tags,
-            category: category,
-            thumbnail: thumbnail,
-        });
+function outputSummary(details) {
+    mkdirp_1.default.sync(path_1.default.dirname(SUMMARY_PATH));
+    var data = details.map(function (detail) {
+        return Object.keys(detail)
+            .filter(function (key) { return key !== 'html'; })
+            .reduce(function (tmp, key) {
+            tmp[key] = detail[key];
+            return tmp;
+        }, {});
     });
     fs_1.default.writeFileSync(SUMMARY_PATH, JSON.stringify(data));
     console.log(chalk_1.default.bgBlue('OUTPUT SUMMARY') + " " + SUMMARY_PATH);
-}
-function parseOutputData(_a) {
-    var date = _a.date, html = _a.html, title = _a.title, tags = _a.tags, category = _a.category;
-    return { date: date, html: html, title: title, tags: tags, category: category };
 }
 function outputDetail(data) {
     fs_1.default.writeFileSync(path_1.default.join(DETAIL_PATH, data.date + ".json"), JSON.stringify(data));
@@ -81,7 +75,7 @@ function outputDetail(data) {
 }
 function outputDetails(source) {
     mkdirp_1.default.sync(DETAIL_PATH);
-    source.map(parseOutputData).forEach(outputDetail);
+    source.forEach(outputDetail);
 }
 function getJsonData(_a) {
     var date = _a.from;
@@ -116,7 +110,7 @@ if (commander_1.default.watch) {
         console.log(chalk_1.default.bgMagenta(event) + " " + changePath);
         outputSummary(allPostsDate);
         var detail = getJsonData({ from: date });
-        outputDetail(parseOutputData(detail));
+        outputDetail(detail);
         console.log('');
     });
 }

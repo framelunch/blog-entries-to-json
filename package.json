@@ -7,10 +7,10 @@
     "license": "MIT",
     "scripts": {
         "precommit": "lint-staged",
-        "start": "cross-env NODE_ENV=development ts-node src/index.ts",
+        "start": "cross-env NODE_ENV=development ts-node src/index.ts --overview-length 100 --entry-dir entries --summary-path test/summary.json --detail-path test/entries",
         "prebuild": "npm run clean",
         "build": "cross-env NODE_ENV=production tsc",
-        "clean": "rimraf -g './dist' -g './src/**/*.{d.ts,js}'",
+        "clean": "rimraf -g './dist' -g './test' -g './src/**/*.{d.ts,js}'",
         "lint": "tslint 'src/**/*.{ts,tsx}'",
         "prettier": "prettier --write 'src/**/*.{ts,tsx,json}'",
         "test": "cross-env NODE_ENV=test jest",

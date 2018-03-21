@@ -209,3 +209,4 @@ $RECYCLE.BIN/
 /.idea
 src/**/*.js
 src/**/*.d.ts
+test

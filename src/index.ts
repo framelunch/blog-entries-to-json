@@ -30,6 +30,7 @@ const { document } = new JSDOM().window;
 interface FrontMatter {
   title: string;
   draft: boolean;
+  author: string;
   thumbnail?: string;
   tags?: string[];
   category?: string;
@@ -39,14 +40,6 @@ interface Detail extends FrontMatter {
   date: string;
   html: string;
   overview: string;
-}
-
-interface ParsedDetail {
-  date: string;
-  html: string;
-  title: string;
-  tags?: string[];
-  category?: string;
 }
 
 /*
@@ -94,31 +87,31 @@ function getOverview(source: string) {
   return source.length <= OVERVIEW_LENGTH ? source : `${source.substring(0, OVERVIEW_LENGTH)}…`;
 }
 
-function outputSummary(source: Detail[]) {
-  const data = source.map(({ date, overview, title, tags, category, thumbnail }) => ({
-    date,
-    overview,
-    title,
-    tags,
-    category,
-    thumbnail,
-  }));
+function outputSummary(details: Detail[]) {
+  mkdirp.sync(path.dirname(SUMMARY_PATH));
+  const data = details.map(detail =>
+    Object.keys(detail)
+      .filter(key => key !== 'html')
+      .reduce(
+        (tmp, key) => {
+          tmp[key] = (detail as any)[key];
+          return tmp;
+        },
+        {} as { [key: string]: any },
+      ),
+  );
   fs.writeFileSync(SUMMARY_PATH, JSON.stringify(data));
   console.log(`${chalk.bgBlue('OUTPUT SUMMARY')} ${SUMMARY_PATH}`);
 }
 
-function parseOutputData({ date, html, title, tags, category }: Detail) {
-  return { date, html, title, tags, category };
-}
-
-function outputDetail(data: ParsedDetail) {
+function outputDetail(data: Detail) {
   fs.writeFileSync(path.join(DETAIL_PATH, `${data.date}.json`), JSON.stringify(data));
   console.log(`${chalk.bgGreen('OUTPUT DETAIL')} ${path.join(DETAIL_PATH, `${data.date}.json`)}`);
 }
 
 function outputDetails(source: Detail[]) {
   mkdirp.sync(DETAIL_PATH);
-  source.map(parseOutputData).forEach(outputDetail);
+  source.forEach(outputDetail);
 }
 
 function getJsonData({ from: date }: { from: string }): Detail {
@@ -158,7 +151,7 @@ if (program.watch) {
 
     outputSummary(allPostsDate);
     const detail = getJsonData({ from: date });
-    outputDetail(parseOutputData(detail));
+    outputDetail(detail);
     console.log('');
   });
 }
